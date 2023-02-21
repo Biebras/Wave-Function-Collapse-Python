@@ -45,8 +45,10 @@ class TilemapData():
 
         for i, path in enumerate(self.tilePaths):
             tile = Tile(i, path)
-            tile.set_neighbours(self.input)
             self.tiles.append(tile)
+
+        for tile in self.tiles:
+            tile.set_neighbours(self.input, self.tiles)
 
     def get_tiles(self):
         return self.tiles

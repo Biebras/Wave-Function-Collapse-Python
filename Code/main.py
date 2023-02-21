@@ -1,6 +1,6 @@
 import pygame
 from tilemap_data import TilemapData
-from wave_function_collapse import WaveFunctionCollapse 
+from wave_function_collapse import Cell, WaveFunctionCollapse 
 
 def main():
     # Initialise screen
@@ -16,8 +16,12 @@ def main():
     tiles = tilemapData.get_tiles()
     wfc = WaveFunctionCollapse(16, 16, 32, tiles)
 
-    # collapse random tile to start algorithm
-    wfc.collapse_random_cell()
+    wfc.draw_grid(screen)
+    pygame.display.update()
+    clock.tick(60)
+
+    # wave function collapse generation
+    wfc.generate_tilemap(screen)
 
     # waint until user quits
     while True:
@@ -28,6 +32,7 @@ def main():
                 exit()
 
         wfc.draw_grid(screen)
+        wfc.draw_cells(screen)
 
         pygame.display.update()
         clock.tick(60)

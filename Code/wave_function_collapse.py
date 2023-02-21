@@ -5,10 +5,13 @@ from tile import Tile
 class Cell():
     def __init__(self, row, col, possibleStates):
         self.possibleStates = possibleStates.copy()
+        self.row = row
+        self.col = col
+        self.tile = None
         self.propagated = False
         self.collapsed = False
 
-    def get_tile(self) -> Tile:
+    def get_tile(self):
         return self.tile
 
     def set_tile(self, tile):
@@ -33,10 +36,39 @@ class WaveFunctionCollapse():
         self.grid = [[Cell(r, c, self.allTiles) for r in range(self.rowCount)] 
                                                 for c in range(self.colCount)]
 
-    # Find not collapsed cell with least possible states
+    def generate_tilemap(self):
+        self.collapse_random_cell()
+        #print(len(self.grid[0][0].possibleStates))
+        #cell = self.find_cell_with_least_states()
+        #if cell is not None:
+        #    print(f"({cell.row}, {cell.col})")
+
+        #self.propagate(cell)
+        #if cell is not None:
+        #    print(len(cell.possibleStates))
+
+        
+        # keep generating until there is no empty cells
+        while True:
+            cell = self.find_cell_with_least_states()
+            result = self.propagate(cell)
+            
+            #if there is cell with no states, end algorithm
+            if result == False:
+                return False
+
+            # cheack if grid is full
+            if self.is_grid_full():
+                 break 
+
+        return True
+
+    # Find not collapsed cell with least possible states, 
+    # if there is the same amount of states, pciks state that has the most neighbours
     def find_cell_with_least_states(self):
         minCell = None
-        minStateCount = int('inf')
+        minStateCount = 10000
+
         for row in self.grid:
             for cell in row:
                 # if cell already collapsed, continue
@@ -44,11 +76,53 @@ class WaveFunctionCollapse():
                     continue
 
                 count = len(cell.possibleStates)
+
+                if count == minStateCount:
+                    minCellC = self.get_neighbour_count(minCell)
+                    cellC = self.get_neighbour_count(cell)
+                    if minCellC < cellC:
+                        minCell = cell
+                        minStateCount = count
+
                 if count < minStateCount:
                     minCell = cell
                     minStateCount = count
 
         return minCell
+
+    #returns neighbour count for a cell
+    def get_neighbour_count(self, cell):
+        count = 0
+
+        # top neighbour
+        top = self.get_top_neighbour(cell)
+        if top is not None and top.tile is not None:
+            count += 1
+
+        # right neighbour
+        right = self.get_right_neighbour(cell)
+        if right is not None and right.tile is not None:
+            count += 1
+
+        # bottom neighbour
+        bottom = self.get_bot_neighbour(cell)
+        if bottom is not None and bottom.tile is not None:
+            count += 1
+
+        # left neighbour
+        left = self.get_left_neighbour(cell)
+        if left is not None and left.tile is not None:
+            count += 1
+
+        return count
+
+    # checks if grid is full
+    def is_grid_full(self):
+        for row in self.grid:
+            for cell in row:
+                if cell.collapsed == False:
+                    return False
+        return True
 
     # collapses random tile
     def collapse_random_cell(self):
@@ -62,8 +136,8 @@ class WaveFunctionCollapse():
         col = cell.col
 
         #reset propogation state to deffault
-        for row in self.grid:
-            for cell in row:
+        for r in self.grid:
+            for cell in r:
                 #skip if tile is already collapsed
                 if cell.collapsed == False:
                     continue
@@ -80,11 +154,11 @@ class WaveFunctionCollapse():
                     startCell.propagated = True
  
 
-        startCell = self.at(row, col)
+        startCell = self.grid[row][col]
         enqueue(startCell)
 
         # loop until there all cells been propogated
-        while not propQueue:
+        while propQueue:
             currCell = propQueue.pop(0)
 
             # get neighbouring cells
@@ -99,7 +173,10 @@ class WaveFunctionCollapse():
             botPossi = self.get_bot_possible_states(botCell)
             leftPossi = self.get_left_possible_states(leftCell)
             allPosabilities = topPossi.union(topPossi, rightPossi, botPossi, leftPossi)
+            print(f"Cell possabilities: {currCell.possibleStates}")
+            print(f"All posabilities: {allPosabilities}")
             intersection = allPosabilities.intersection(currCell.possibleStates)
+            print(f"Intersection: {intersection}")
             currCell.possibleStates = intersection
 
             # if current cell does not have any possible states, return algorithm false
@@ -116,43 +193,44 @@ class WaveFunctionCollapse():
             enqueue(rightCell)
             enqueue(botCell)
             enqueue(leftCell)
+            break
 
         return True
 
     # returns top possible states
     def get_top_possible_states(self, topCell) -> set:
-        topPossibleStates =  set()
+        topStates = set()
         if topCell is not None:
             for state in topCell.possibleStates:
-                topPossibleStates.union(state.get_bot_possible_states())
-        return topPossibleStates
+                topStates = topStates.union(state.get_bot_possible_states())
+        return topStates
 
     # returns right possible states
     def get_right_possible_states(self, rightCell) -> set:
-        rightPossibleStates =  set()
+        rightStates =  set()
         if rightCell is not None:
             for state in rightCell.possibleStates:
-                rightPossibleStates.union(state.get_left_possible_states())
-        return rightPossibleStates
+                rightStates = rightStates.union(state.get_left_possible_states())
+        return rightStates
 
     # returns bot possible states
     def get_bot_possible_states(self, botCell) -> set:
-        botPossibleStates =  set()
+        botStates =  set()
         if botCell is not None:
             for state in botCell.possibleStates:
-                botPossibleStates.union(state.get_top_possible_states())
-        return botPossibleStates
+                botStates = botStates.union(state.get_top_possible_states())
+        return botStates
 
     # returns left possible states
     def get_left_possible_states(self, leftCell) -> set:
-        leftPossibleStates =  set()
+        leftStates =  set()
         if leftCell is not None:
             for state in leftCell.possibleStates:
-                leftPossibleStates.union(state.get_right_possible_states())
-        return leftPossibleStates
+                leftStates = leftStates.union(state.get_right_possible_states())
+        return leftStates
 
     # returns right cell
-    def get_right_neighbour(self, cell) -> Cell:
+    def get_right_neighbour(self, cell):
         if cell.col < self.colCount - 1:
             return self.grid[cell.row][cell.col+1]
 
@@ -173,16 +251,12 @@ class WaveFunctionCollapse():
         return None
 
     # returns bot cell
-    def get_bot_neighbour(self, cell) -> Cell:
+    def get_bot_neighbour(self, cell):
         if cell.row < self.rowCount - 1:
             return self.grid[cell.row+1][cell.col]
 
         return None
        
-    # return cell at postion
-    def at(self, row, col):
-        return self.grid[row][col]
-
     # draw grid
     def draw_grid(self, screen, color=(0, 0, 0)):
         width = self.colCount * self.cellSize
@@ -197,7 +271,7 @@ class WaveFunctionCollapse():
     def clear_grid(self):
         for r in range(self.rowCount):
             for c in range(self.colCount):
-                self.at(r, c).set_tile(None)
+                self.grid[r][c].set_tile(None)
 
     # draw cells content
     def draw_cells(self, screen):
@@ -217,7 +291,7 @@ class WaveFunctionCollapse():
         for row in self.grid:
             for cell in row:
                 if cell is not None:
-                    string += f"{cell.get_tile().ID:3} "
+                    string += f"{cell.tile.ID:3} "
                 else:
                     string += f" -1 "
             string += "\n"

@@ -13,16 +13,16 @@ class Tile:
         self.botNeighbours = set()
 
     # sets neighbours from input
-    def set_neighbours(self, mapInput):
+    def set_neighbours(self, mapInput, allTiles):
         def set_adjacent_neighbours(row, col):
             if col > 0:
-                self.leftNeighbours.add(mapInput[row][col-1])
+                self.leftNeighbours.add(allTiles[mapInput[row][col-1]])
             if col < len(mapInput[row]) - 1:
-                self.rightNeighbours.add(mapInput[row][col+1])
+                self.rightNeighbours.add(allTiles[mapInput[row][col+1]])
             if row > 0:
-                self.topNeighbours.add(mapInput[row-1][col])
+                self.topNeighbours.add(allTiles[mapInput[row-1][col]])
             if row < len(mapInput) - 1:
-                self.botNeighbours.add(mapInput[row+1][col])
+                self.botNeighbours.add(allTiles[mapInput[row+1][col]])
 
         for row in range(len(mapInput)):
             for col in range(len(mapInput[row])):
