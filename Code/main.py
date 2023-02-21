@@ -1,7 +1,6 @@
 import pygame
-import neat
-from tilemap_data import Tile, TilemapData
-from grid import Grid
+from tilemap_data import TilemapData
+from wave_function_collapse import WaveFunctionCollapse 
 
 def main():
     # Initialise screen
@@ -9,13 +8,16 @@ def main():
     screen = pygame.display.set_mode((512, 512))
     backgroundColor = (200, 200, 200)
     screen.fill(backgroundColor)
-    pygame.display.set_caption('Basic Pygame program')
+    pygame.display.set_caption('Wave Function Collapse')
     clock = pygame.time.Clock()
 
     #tilemap
     tilemapData = TilemapData()
     tiles = tilemapData.get_tiles()
-    grid = Grid(16, 16, 32)
+    wfc = WaveFunctionCollapse(16, 16, 32, tiles)
+
+    # collapse random tile to start algorithm
+    wfc.collapse_random_cell()
 
     # waint until user quits
     while True:
@@ -25,8 +27,10 @@ def main():
                 pygame.quit()
                 exit()
 
+        wfc.draw_grid(screen)
+
         pygame.display.update()
-        clock.tick(600)
+        clock.tick(60)
 
 # load main function
 if __name__ == '__main__':
