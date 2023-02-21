@@ -6,6 +6,7 @@ class TilemapData():
 
     def __init__(self):
         # tileset input, AI should generate room following rules set by input
+        
         self.input = [[ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
                  [ 0,  0,  1,  2,  2,  2,  3,  0,  0,  0],
                  [ 0,  0,  4,  5,  6,  7,  8,  2,  3,  0],
@@ -23,6 +24,13 @@ class TilemapData():
                  [ 0,  4, 56, 57, 18, 19, 43, 45,  0,  0],
                  [ 0, 39, 44, 44, 44, 44, 45,  0,  0,  0],
                  [ 0,  0,  0,  0,  0,  0,  0,  0,  0 ,  0]]
+        '''
+        self.input = [[2, 2, 2, 2, 2, 2],
+                      [2, 2, 1, 1, 2, 2],
+                      [2, 1, 0, 0, 1, 2],
+                      [2, 1, 0, 0, 1, 2],
+                      [2, 2, 1, 1, 2, 2]]
+        '''
        
         self.set_file_paths()
         self.set_tiles()

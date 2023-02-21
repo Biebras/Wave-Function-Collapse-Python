@@ -48,3 +48,7 @@ class Tile:
     # draw tile on screen
     def draw(self, screen, x, y):
         screen.blit(self.image, (x, y))
+
+    # print id
+    def __str__(self) -> str:
+        return str(self.ID)

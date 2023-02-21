@@ -1,6 +1,6 @@
 import pygame
 from tilemap_data import TilemapData
-from wave_function_collapse import Cell, WaveFunctionCollapse 
+from wave_function_collapse import WaveFunctionCollapse 
 
 def main():
     # Initialise screen
@@ -10,18 +10,19 @@ def main():
     screen.fill(backgroundColor)
     pygame.display.set_caption('Wave Function Collapse')
     clock = pygame.time.Clock()
+    pygame.font.init()
+    font = pygame.font.SysFont('Comic Sans MS', 9)
 
     #tilemap
     tilemapData = TilemapData()
     tiles = tilemapData.get_tiles()
-    wfc = WaveFunctionCollapse(16, 16, 32, tiles)
+    wfc = WaveFunctionCollapse(8, 8, 32, tiles)
 
-    wfc.draw_grid(screen)
-    pygame.display.update()
-    clock.tick(60)
+    # wfc generation
+    wfc.generate_tilemap()
 
-    # wave function collapse generation
-    wfc.generate_tilemap(screen)
+    #wfc.collapse_random_cell()
+    #cell = wfc.find_cell_with_least_states()
 
     # waint until user quits
     while True:
@@ -31,11 +32,11 @@ def main():
                 pygame.quit()
                 exit()
 
-        wfc.draw_grid(screen)
         wfc.draw_cells(screen)
+        wfc.draw_grid(screen, font)
 
         pygame.display.update()
-        clock.tick(60)
+        clock.tick(1)
 
 # load main function
 if __name__ == '__main__':
