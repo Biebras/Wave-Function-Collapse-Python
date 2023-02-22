@@ -53,45 +53,31 @@ class WaveFunctionCollapse():
                                                 for r in range(self.colCount)]
 
     def generate_tilemap(self):
-        #print([_.ID for _ in (self.allTiles[0].get_top_possible_states())])
-        #print([_.ID for _ in (self.allTiles[0].get_right_possible_states())])
-        #print([_.ID for _ in (self.allTiles[0].get_bot_possible_states())])
-        #print([_.ID for _ in (self.allTiles[0].get_left_possible_states())])
-        
-        '''
-        self.grid[5][5].collapse_with(0)
-        self.propagate(self.grid[5][5])
-
-        self.grid[4][5].collapse_with(0)
-        self.propagate(self.grid[4][5])
-
-        self.grid[4][4].collapse_with(1)
-        self.propagate(self.grid[4][4])
-
-        self.grid[3][4].collapse_with(2)
-        self.propagate(self.grid[3][4])
- 
-        self.grid[3][2].collapse_with(1)
-        self.propagate(self.grid[3][2])
-
-        tmpr = self.find_cell_with_least_states()
-        if tmpr is not None:
-            print(f"{tmpr.row},{tmpr.col}")
-        '''
         self.collapse_random_cell()
         
         # keep generating until there is no empty cells
         while True:
-            cell = self.find_cell_with_least_states()
-            result = self.propagate(cell)
-            print(result)
-            #if there is cell with no states, end algorithm
-            if result == False:
-                return False
+            cell = None
+            
+            for _ in range(6):
+                cell = self.find_cell_with_least_states()
+                
+                if cell is None:
+                    break
 
-            cell = self.find_cell_with_least_states()
+                result = self.propagate(cell)
+            
+                #if there is cell with no states, end algorithm
+                if result == False:
+                    return False
+
+            least_states = self.find_cell_with_least_states()
 
             if cell is not None:
+                if least_states is not None:
+                    if len(least_states.possibleStates) < len(cell.possibleStates):
+                        cell = least_states
+
                 cell.collapse()
 
             # cheack if grid is full
@@ -330,6 +316,8 @@ class WaveFunctionCollapse():
     def clear_grid(self):
         for r in range(self.rowCount):
             for c in range(self.colCount):
+                self.grid[r][c].collapsed = False
+                self.grid[r][c].possibleStates = set(self.allTiles)
                 self.grid[r][c].set_tile(None)
 
     # draw cells content

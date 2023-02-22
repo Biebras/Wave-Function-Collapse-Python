@@ -7,6 +7,7 @@ class Tile:
         self.ID = tileID
         self.path = path
         self.image = pygame.image.load(path)
+        self.image = pygame.transform.scale(self.image, (64, 64))
         self.rightNeighbours = set()
         self.leftNeighbours = set()
         self.topNeighbours = set()
