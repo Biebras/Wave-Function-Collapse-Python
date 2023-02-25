@@ -1,6 +1,5 @@
 import pygame
 import random
-from tile import Tile
 
 class Cell():
     def __init__(self, row, col, possibleStates):
@@ -39,16 +38,21 @@ class Cell():
         self.possibleStates.clear()
         self.possibleStates.add(tile)
 
+    def cord(self):
+        return (self.row, self.col)
+
     def draw(self, screen, x, y):
         if self.tile is not None:
             self.tile.draw(screen, x, y)
 
 class WaveFunctionCollapse():
-    def __init__(self, rows, cols, cellSize, allTiles):
+    def __init__(self, rows, cols, cellSize, allTiles, screen):
         self.rowCount = rows;
         self.colCount = cols;
         self.cellSize = cellSize
         self.allTiles = allTiles
+        self.screen = screen
+
         self.grid = [[Cell(r, c, self.allTiles) for c in range(self.rowCount)] 
                                                 for r in range(self.colCount)]
 
@@ -58,6 +62,10 @@ class WaveFunctionCollapse():
         # keep generating until there is no empty cells
         while True:
             cell = None
+
+            # cheack if grid is full
+            if self.is_grid_full():
+                 break 
             
             for _ in range(6):
                 cell = self.find_cell_with_least_states()
@@ -80,10 +88,6 @@ class WaveFunctionCollapse():
 
                 cell.collapse()
 
-            # cheack if grid is full
-            if self.is_grid_full():
-                 break 
-                
         return True
 
     # Find not collapsed cell with least possible states, 
@@ -295,22 +299,22 @@ class WaveFunctionCollapse():
         return None
        
     # draw grid
-    def draw_grid(self, screen, font, color=(0, 0, 0)):
+    def draw_grid(self, font, color=(0, 0, 0)):
         for row in range(self.rowCount):
             for col in range(self.colCount):
+                cell = self.grid[row][col]
                 x = col * self.cellSize
                 y = row * self.cellSize
 
                 cord = f"({row}, {col})"
-                cell = self.grid[row][col]
-                states = f"{len(cell.possibleStates)}"
+                stateCount = f"{len(cell.possibleStates)}"
 
                 rect = pygame.Rect(x, y, self.cellSize, self.cellSize)
-                pygame.draw.rect(screen, color, rect, 1)
-                text_states = font.render(states, False, (0, 0, 0))
-                screen.blit(text_states, (x, y))
+                pygame.draw.rect(self.screen, color, rect, 1)
+                text_states = font.render(stateCount, False, (0, 0, 0))
+                self.screen.blit(text_states, (x + 3, y))
                 text_cord = font.render(cord, False, (0, 0, 0))
-                screen.blit(text_cord, (x + 2, y + 15))
+                self.screen.blit(text_cord, (x + 3, y + 15))
 
     # clear grid
     def clear_grid(self):
@@ -321,7 +325,7 @@ class WaveFunctionCollapse():
                 self.grid[r][c].set_tile(None)
 
     # draw cells content
-    def draw_cells(self, screen):
+    def draw_cells(self):
         for r, row in enumerate(self.grid):
             for c, cell in enumerate(row):
                 if cell is None:
@@ -329,7 +333,7 @@ class WaveFunctionCollapse():
 
                 x = c * self.cellSize
                 y = r * self.cellSize
-                cell.draw(screen, x, y)
+                cell.draw(self.screen, x, y)
 
     # custom print
     def __str__(self):

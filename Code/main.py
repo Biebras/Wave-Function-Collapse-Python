@@ -16,13 +16,9 @@ def main():
     #tilemap
     tilemapData = TilemapData()
     tiles = tilemapData.get_tiles()
-    wfc = WaveFunctionCollapse(12, 10, 64, tiles)
+    wfc = WaveFunctionCollapse(12, 12, 64, tiles, screen)
 
-    # wfc generation
-    wfc.generate_tilemap()
-
-    #wfc.collapse_random_cell()
-    #cell = wfc.find_cell_with_least_states()
+    #wfc.generate_tilemap()
 
     # waint until user quits
     while True:
@@ -37,8 +33,8 @@ def main():
                     wfc.generate_tilemap()
 
         screen.fill(backgroundColor)       
-        wfc.draw_cells(screen)
-        #wfc.draw_grid(screen, font)
+        wfc.draw_cells()
+        #wfc.draw_grid(font)
 
         pygame.display.update()
         clock.tick(60)

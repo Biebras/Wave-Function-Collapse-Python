@@ -18,7 +18,7 @@ class TilemapData():
 
     # get's all files from tile folder and sorts ascending
     def set_file_paths(self):
-        tileFolder = "Artwork/Tiles"
+        tileFolder = "Artwork/TilesThatProfesorDidNotLike"
         self.tilePaths = []
 
         # retrieve files
