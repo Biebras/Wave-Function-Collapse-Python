@@ -57,7 +57,10 @@ class WaveFunctionCollapse():
                                                 for r in range(self.colCount)]
 
     def generate_tilemap(self):
-        self.collapse_random_cell()
+        #self.collapse_random_cell()
+        maxHeight = random.randint(0, 2)
+        for col in range(self.colCount):
+            self.grid[maxHeight][col].collapse_with(10)
         
         # keep generating until there is no empty cells
         while True:
@@ -198,7 +201,7 @@ class WaveFunctionCollapse():
 
             # if current cell does not have any possible states, return algorithm false
             if len(currCell.possibleStates) == 0:
-                #print("Can't generate tile map as one of the cells don't have any states")
+                print("Can't generate tile map as one of the cells don't have any states")
                 return False
             
             # if there is only 1 possible state, collapse the tile

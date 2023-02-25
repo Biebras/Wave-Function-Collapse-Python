@@ -7,28 +7,11 @@ class Tile:
         self.ID = tileID
         self.path = path
         self.image = pygame.image.load(path)
-        self.image = pygame.transform.scale(self.image, (64, 64))
+        self.image = pygame.transform.scale(self.image, (128, 128))
         self.rightNeighbours = set()
         self.leftNeighbours = set()
         self.topNeighbours = set()
         self.botNeighbours = set()
-
-    # sets neighbours from input
-    def set_neighbours(self, mapInput, allTiles):
-        def set_adjacent_neighbours(row, col):
-            if col > 0:
-                self.leftNeighbours.add(allTiles[mapInput[row][col-1]])
-            if col < len(mapInput[row]) - 1:
-                self.rightNeighbours.add(allTiles[mapInput[row][col+1]])
-            if row > 0:
-                self.topNeighbours.add(allTiles[mapInput[row-1][col]])
-            if row < len(mapInput) - 1:
-                self.botNeighbours.add(allTiles[mapInput[row+1][col]])
-
-        for row in range(len(mapInput)):
-            for col in range(len(mapInput[row])):
-                if self.ID == mapInput[row][col]:
-                    set_adjacent_neighbours(row, col)
 
     # get available top neighbours
     def get_top_possible_states(self):

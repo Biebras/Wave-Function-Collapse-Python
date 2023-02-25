@@ -16,9 +16,9 @@ def main():
     #tilemap
     tilemapData = TilemapData()
     tiles = tilemapData.get_tiles()
-    wfc = WaveFunctionCollapse(12, 12, 64, tiles, screen)
+    wfc = WaveFunctionCollapse(6, 6, 128, tiles, screen)
 
-    #wfc.generate_tilemap()
+    wfc.generate_tilemap()
 
     # waint until user quits
     while True:
