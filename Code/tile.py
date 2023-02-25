@@ -3,11 +3,14 @@ import pygame
 class Tile:
     ID = 0
 
-    def __init__(self, tileID, path):
+    def __init__(self, tileID, path, cell_size):
         self.ID = tileID
         self.path = path
+
+        # load image
         self.image = pygame.image.load(path)
-        self.image = pygame.transform.scale(self.image, (128, 128))
+        self.image = pygame.transform.scale(self.image, (cell_size, cell_size))
+
         self.rightNeighbours = set()
         self.leftNeighbours = set()
         self.topNeighbours = set()

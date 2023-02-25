@@ -16,14 +16,12 @@ class Cell():
     def set_tile(self, tile):
         self.tile = tile
 
+    # collapse cell with random tile into singularity
     def collapse(self):
         tile = random.choice(list(self.possibleStates))
-        self.set_tile(tile)
-        self.collapsed = True
-        self.propagated = True
-        self.possibleStates.clear()
-        self.possibleStates.add(tile)
+        self.collapse_with(tile.ID)
 
+    # collapse cell with specific tile into singularity
     def collapse_with(self, index):
         tmp = list(self.possibleStates)
 
@@ -46,21 +44,38 @@ class Cell():
             self.tile.draw(screen, x, y)
 
 class WaveFunctionCollapse():
-    def __init__(self, rows, cols, cellSize, allTiles, screen):
+    def __init__(self, rows, cols, cellSize, allTiles, font, screen, backgroundColor, debug = False):
         self.rowCount = rows;
         self.colCount = cols;
         self.cellSize = cellSize
         self.allTiles = allTiles
         self.screen = screen
+        self.font = font
+        self.backgroundColor = backgroundColor
+        self.debug = debug
 
-        self.grid = [[Cell(r, c, self.allTiles) for c in range(self.rowCount)] 
-                                                for r in range(self.colCount)]
+        self.grid = [[Cell(r, c, self.allTiles) for c in range(self.colCount)] 
+                                                for r in range(self.rowCount)]
+        
+    def update_screen(self):
+        self.screen.fill(self.backgroundColor)
+        self.draw_cells();
+        self.draw_grid();
+        pygame.display.update()
 
+    # use wave function collapse algorithm to generate tilemap
     def generate_tilemap(self):
-        #self.collapse_random_cell()
-        maxHeight = random.randint(0, 2)
-        for col in range(self.colCount):
-            self.grid[maxHeight][col].collapse_with(10)
+        maxHeight = random.randint(-1, 3)
+
+        if maxHeight != -1:
+            for col in range(self.colCount):
+                self.grid[maxHeight][col].collapse_with(10)
+                if self.debug:
+                    self.update_screen()
+                    pygame.time.wait(50)
+        else:
+            self.collapse_random_cell()
+
         
         # keep generating until there is no empty cells
         while True:
@@ -70,7 +85,8 @@ class WaveFunctionCollapse():
             if self.is_grid_full():
                  break 
             
-            for _ in range(6):
+            # propogate multiple times, to ensure that we collapse least possible states
+            for _ in range(4):
                 cell = self.find_cell_with_least_states()
                 
                 if cell is None:
@@ -84,12 +100,70 @@ class WaveFunctionCollapse():
 
             least_states = self.find_cell_with_least_states()
 
+            # compare least states with cell that was propogated and collapse the one with least states
             if cell is not None:
                 if least_states is not None:
                     if len(least_states.possibleStates) < len(cell.possibleStates):
                         cell = least_states
 
                 cell.collapse()
+
+        return True
+    
+    #propogates through tiles from start cell, collapse tile when needed
+    def propagate(self, startCell):
+
+        #reset propogation state to deffault
+        for row in self.grid:
+            for cell in row:
+                cell.propagated = False
+
+        # apply BFS search algorith to propogate through cells
+        propQueue = []
+
+        def enqueue(cell):
+            if cell is not None:
+                if cell.propagated == False and cell.collapsed == False:
+                    propQueue.append(cell)
+                    cell.propagated = True
+
+        enqueue(startCell)
+
+        # loop until there all cells been propogated
+        while propQueue:
+            currCell = propQueue.pop(0)
+
+            if currCell.collapsed == False:
+                topPossi = self.get_top_possible_states(currCell)
+                rightPossi = self.get_right_possible_states(currCell)
+                botPossi = self.get_bot_possible_states(currCell)
+                leftPossi = self.get_left_possible_states(currCell)
+                intersection = topPossi.intersection(topPossi, rightPossi, botPossi, leftPossi)
+                currCell.possibleStates = intersection
+
+                # if current cell does not have any possible states, return algorithm false
+                if len(currCell.possibleStates) == 0:
+                    print("Can't generate tile map as one of the cells don't have any states")
+                    return False
+                
+                # if there is only 1 possible state, collapse the tile
+                if len(currCell.possibleStates) == 1:
+                    currCell.collapse()
+
+                topCell = self.get_top_neighbour(currCell)
+                rightCell = self.get_right_neighbour(currCell)
+                botCell = self.get_bot_neighbour(currCell)
+                leftCell = self.get_left_neighbour(currCell)
+
+            # queue neighbours
+            enqueue(topCell)
+            enqueue(rightCell)
+            enqueue(botCell)
+            enqueue(leftCell)
+
+            if self.debug:
+                self.update_screen()
+                pygame.time.wait(1)
 
         return True
 
@@ -158,68 +232,6 @@ class WaveFunctionCollapse():
         cell = random.choice(row)
         cell.collapse()
         return cell
-
-    #propogates through tiles from start cell, collapse tile when needed
-    def propagate(self, startCell):
-
-        #reset propogation state to deffault
-        for row in self.grid:
-            for cell in row:
-                cell.propagated = False
-
-        # apply BFS search algorith to propogate through cells
-        propQueue = []
-
-        def enqueue(cell):
-            if cell is not None:
-                if cell.propagated == False and cell.collapsed == False:
-                    propQueue.append(cell)
-                    cell.propagated = True
-
-        if startCell.collapsed == True:
-            top = self.get_top_neighbour(startCell)
-            right = self.get_right_neighbour(startCell)
-            bot = self.get_bot_neighbour(startCell)
-            left = self.get_left_neighbour(startCell)
-            enqueue(top)
-            enqueue(right)
-            enqueue(bot)
-            enqueue(left)
-        else:
-            enqueue(startCell)
-
-        # loop until there all cells been propogated
-        while propQueue:
-            currCell = propQueue.pop(0)
-
-            topPossi = self.get_top_possible_states(currCell)
-            rightPossi = self.get_right_possible_states(currCell)
-            botPossi = self.get_bot_possible_states(currCell)
-            leftPossi = self.get_left_possible_states(currCell)
-            intersection = topPossi.intersection(topPossi, rightPossi, botPossi, leftPossi)
-            currCell.possibleStates = intersection
-
-            # if current cell does not have any possible states, return algorithm false
-            if len(currCell.possibleStates) == 0:
-                print("Can't generate tile map as one of the cells don't have any states")
-                return False
-            
-            # if there is only 1 possible state, collapse the tile
-            if len(currCell.possibleStates) == 1:
-                currCell.collapse()
-
-            topCell = self.get_top_neighbour(currCell)
-            rightCell = self.get_right_neighbour(currCell)
-            botCell = self.get_bot_neighbour(currCell)
-            leftCell = self.get_left_neighbour(currCell)
-
-            # queue neighbours
-            enqueue(topCell)
-            enqueue(rightCell)
-            enqueue(botCell)
-            enqueue(leftCell)
-
-        return True
 
     # returns top possible states
     def get_top_possible_states(self, cell) -> set:
@@ -302,7 +314,7 @@ class WaveFunctionCollapse():
         return None
        
     # draw grid
-    def draw_grid(self, font, color=(0, 0, 0)):
+    def draw_grid(self, color=(0, 0, 0)):
         for row in range(self.rowCount):
             for col in range(self.colCount):
                 cell = self.grid[row][col]
@@ -312,12 +324,18 @@ class WaveFunctionCollapse():
                 cord = f"({row}, {col})"
                 stateCount = f"{len(cell.possibleStates)}"
 
-                rect = pygame.Rect(x, y, self.cellSize, self.cellSize)
-                pygame.draw.rect(self.screen, color, rect, 1)
-                text_states = font.render(stateCount, False, (0, 0, 0))
-                self.screen.blit(text_states, (x + 3, y))
-                text_cord = font.render(cord, False, (0, 0, 0))
-                self.screen.blit(text_cord, (x + 3, y + 15))
+                if cell.propagated == True:
+                    color = (0, 255, 0)
+                else:
+                    color = (0, 0, 0)
+
+                if cell.collapsed == False:
+                    rect = pygame.Rect(x, y, self.cellSize, self.cellSize)
+                    pygame.draw.rect(self.screen, color, rect, 1)
+                    text_states = self.font.render(stateCount, False, (0, 0, 0))
+                    self.screen.blit(text_states, (x + 3, y))
+                    text_cord = self.font.render(cord, False, (0, 0, 0))
+                    self.screen.blit(text_cord, (x + 3, y + 15))
 
     # clear grid
     def clear_grid(self):

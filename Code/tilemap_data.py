@@ -4,7 +4,8 @@ from tile import Tile
 
 class TilemapData():
 
-    def __init__(self):
+    def __init__(self, cell_size):
+        self.cell_size = cell_size
         self.load_file_paths()
         self.set_tiles()
 
@@ -86,7 +87,7 @@ class TilemapData():
         self.tiles = []
 
         for i, path in enumerate(self.tilePaths):
-            tile = Tile(i, path)
+            tile = Tile(i, path, self.cell_size)
             self.tiles.append(tile)
 
     #set all neighbours
@@ -116,12 +117,12 @@ class TilemapData():
         for id in neighbourIDs:
             self.tiles[tileID].botNeighbours.add(self.tiles[id])
 
-    def get_tiles(self):
+    def get_tiles(self) -> list:
         return self.tiles
 
     def get_tile_at(self, tileID) -> Tile:
         return self.tiles[tileID]
 
-    def get_random_tile(self):
+    def get_random_tile(self) -> Tile:
         return random.choice(self.tiles)
 
